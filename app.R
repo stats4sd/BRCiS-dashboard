@@ -224,7 +224,8 @@ server <- function(input, output, session) {
       filtered_data <- isolate(data$check) %>%
         filter(Member_org_BL.m %in% input$filter_partner,
                District_BL.m %in% input$filter_district,
-               date.m %in% input$filter_date)
+               date.m %in% input$filter_date, 
+               TeamLeader.m %in% input$filter_teamLeader)
       enum_choices <- filtered_data %>%
         pull(username.m) %>% unique() %>% sort(na.last=TRUE)
       tmp<-list(enum_choices)
