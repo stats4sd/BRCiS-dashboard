@@ -46,7 +46,7 @@ midline_keep <- c("serial_no_ML", "Member_org_BL",
                   "Region_BL", "District_BL", "Community_BL", "TeamLeader", "username", 
                   "midline_who", 
                   "contact_number", "contact_number2","start_time", "CompletionDateTime","date",
-                  "interviewDuration",  "interviewDuringDay", "veryshort", "short",  "reasonableDuration", "toolong", "nbDontknow", "nb0s")
+                  "interviewDuration",  "interviewDuringDay", "extrashort", "supershort", "veryshort", "short",  "reasonableDuration", "toolong", "nbDontknow", "nb0s")
 midline_keep <- paste0(midline_keep,".m")
 
 
@@ -74,7 +74,9 @@ prepareData <- function(midline, backcheck){
   midline$toolong <- midline$interviewDuration>90
   midline$reasonableDuration <- between(midline$interviewDuration, 25, 90)
   midline$short <- between(midline$interviewDuration, 25, 30)
-  midline$veryshort <- midline$interviewDuration<25
+  midline$veryshort <- between(midline$interviewDuration, 20, 25)
+  midline$supershort <- between(midline$interviewDuration, 15, 20)
+  midline$extrashort <- midline$interviewDuration<15
   midline$nbDontknow <- apply(midline,1,function(x) sum(x%in%c(-8, -9), na.rm=T))
   midline$nb0s <- apply(midline,1,function(x) sum(x==0, na.rm=T))
   
@@ -252,7 +254,9 @@ server <- function(input, output, session) {
          dplyr::summarise(N=sum(!is.na(serial_no_ML.m), na.rm=T),
                    time_ok=mean(interviewDuringDay.m, na.rm=TRUE),
                    avg_duration = mean(interviewDuration.m, na.rm=TRUE),
-                   `<25min`=mean(veryshort.m, na.rm=TRUE),
+                   `<15min`=mean(extrashort.m, na.rm=TRUE),
+                   `15-20min`=mean(supershort.m, na.rm=TRUE),
+                   `20-25min`=mean(veryshort.m, na.rm=TRUE),
                    #`25-30min`=mean(short.m, na.rm=TRUE),
                    `25-90min` = mean(reasonableDuration.m, na.rm=TRUE),
                    `>90min`= mean(toolong.m, na.rm=TRUE),
@@ -287,7 +291,7 @@ server <- function(input, output, session) {
     # show the summary table
     output$summary_table <- renderDataTable({
       datatable(summaryTable()) %>%
-        formatPercentage(c("avg_match_perc", "min_match_perc", "<25min", "25-90min", ">90min", "time_ok"), 0)%>%
+        formatPercentage(c("avg_match_perc", "min_match_perc", "<15min","15-20min", "20-25min", "25-90min", ">90min", "time_ok"), 0)%>%
         formatRound(c("avg_duration", "avg_dontknow"), 1)
     })
 
