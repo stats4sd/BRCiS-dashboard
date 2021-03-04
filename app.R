@@ -114,7 +114,8 @@ get_data <- function(login, password){
         dplyr::rename(
           contact_number=a_1705,
           contact_number2=a_1708,
-          livelihood_zone=e0.cluster.e5.b_110,
+          #livelihood_zone=e0.cluster.e5.b_110,
+          livelihood_zone=f.f1.b_110,
           shock_main=f.f1.main_shock,
           house_ownership=j4.a_516,
           own_land=k2.a_616,
@@ -148,7 +149,7 @@ ui <- fluidPage(
         #"Region_BL", "District_BL", "Community_BL", "username"
         #selectInput("summary_by", "Choose focus of quality summary table", c("agency.m", "username.m"), multiple = TRUE),
         pickerInput("target_by", "%target by (top table)", c("Country.m","Member_org_BL.m", "Region_BL.m", "District_BL.m"), selected = c("Country.m"), multiple = TRUE),
-        pickerInput("summary_by", "Summary by (middle table)", c("Member_org_BL.m", "Region_BL.m","District_BL.m", "Community_BL.m","TeamLeader.m", "username.m"), selected = c("Member_org_BL.m"), multiple = TRUE),
+        pickerInput("summary_by", "Summary by (middle table)", c("date.m","Member_org_BL.m", "Region_BL.m","District_BL.m", "Community_BL.m","TeamLeader.m", "username.m"), selected = c("Member_org_BL.m"), multiple = TRUE),
         #pickerInput("summary_by", "Summary by (top table)", c("Member_org_BL.m"), selected = c("Member_org_BL.m"), multiple = TRUE),
         pickerInput("filter_date", "Filter date",sort(unique(listData()$date.m), na.last=TRUE),selected = unique(listData()$date.m),options = list(`actions-box` = TRUE), multiple = T),
         pickerInput("filter_partner", "Filter Member Organisation",sort(unique(listData()$Member_org_BL.m), na.last=TRUE),selected = unique(listData()$Member_org_BL.m),options = list(`actions-box` = TRUE), multiple = T),
@@ -207,8 +208,8 @@ server <- function(input, output, session) {
         
         # merges targets with actual data so that %target can later be calculated
         forTargets<- data$check %>%
-          group_by(Member_org_BL.m, Region_BL.m, District_BL.m)%>%
-          summarise(N.m=sum(!is.na(unique(serial_no_ML.m)), na.rm=T))
+          dplyr::group_by(Member_org_BL.m, Region_BL.m, District_BL.m)%>%
+          dplyr::summarise(N.m=sum(!is.na(unique(serial_no_ML.m)), na.rm=T))
         data$targets <- left_join(select(d_targets, -N.m), forTargets, by=c("Member_org_BL.m"="Member_org_BL.m","Region_BL.m"="Region_BL.m", "District_BL.m"="District_BL.m"))
         
     })
