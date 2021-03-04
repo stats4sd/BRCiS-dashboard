@@ -79,6 +79,7 @@ prepareData <- function(midline, backcheck){
   midline$extrashort <- midline$interviewDuration<15
   midline$nbDontknow <- apply(midline,1,function(x) sum(x%in%c(-8, -9), na.rm=T))
   midline$nb0s <- apply(midline,1,function(x) sum(x==0, na.rm=T))
+  midline$TeamLeader <- as.character(midline$TeamLeader)
   
   #add .m/.s to differentiate midline and backcheck
   colnames(midline) <- paste0(colnames(midline),".m")
@@ -156,8 +157,8 @@ ui <- fluidPage(
         pickerInput("filter_date", "Filter date",sort(unique(listData()$date.m), na.last=TRUE),selected = unique(listData()$date.m),options = list(`actions-box` = TRUE), multiple = T),
         pickerInput("filter_partner", "Filter Member Organisation",sort(unique(listData()$Member_org_BL.m), na.last=TRUE),selected = unique(listData()$Member_org_BL.m),options = list(`actions-box` = TRUE), multiple = T),
         pickerInput("filter_district", "Filter district",sort(unique(listData()$District_BL.m), na.last=TRUE),selected = unique(listData()$District_BL.m),options = list(`actions-box` = TRUE), multiple = T),
+        pickerInput("filter_teamLeader", "Filter team leader",sort(unique(listData()$TeamLeader.m), na.last=TRUE),selected=unique(listData()$TeamLeader.m),options = list(`actions-box` = TRUE), multiple = T),
         pickerInput("filter_username", "Filter username",sort(unique(listData()$username.m), na.last=TRUE),selected=unique(listData()$username.m),options = list(`actions-box` = TRUE), multiple = T),
-        #pickerInput("filter_teamLeader", "Filter team leader",sort(unique(listData()$TeamLeader.m), na.last=TRUE),selected=unique(listData()$TeamLeader.m),options = list(`actions-box` = TRUE), multiple = T),
         h5("For bottom table:"),
 
         sliderInput("data_quality_threshold",
@@ -206,6 +207,7 @@ server <- function(input, output, session) {
         updatePickerInput(session, "filter_partner", choices = sort(unique((data$check)$Member_org_BL.m), na.last=TRUE),selected = unique((data$check)$Member_org_BL.m))
         updatePickerInput(session, "filter_date", choices = sort(unique((data$check)$date.m), na.last=TRUE),selected = unique((data$check)$date.m))
         updatePickerInput(session, "filter_district", choices = sort(unique((data$check)$District_BL.m), na.last=TRUE),selected = unique((data$check)$District_BL.m))
+        updatePickerInput(session, "filter_teamLeader", choices = sort(unique((data$check)$TeamLeader.m), na.last=TRUE),selected = unique((data$check)$TeamLeader.m))
         #updatePickerInput(session, "filter_teamLeader", choices = sort(unique((data$check)$TeamLeader.m), na.last=TRUE),selected = unique((data$check)$TeamLeader.m))
         
         # merges targets with actual data so that %target can later be calculated
