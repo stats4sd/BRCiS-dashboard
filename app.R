@@ -113,6 +113,7 @@ get_data <- function(login, password){
     d_midline <- tryCatch(onaDownload("BRCiS_Midline_Survey_2021", "BRCiS",login,password, keepGroupNames=FALSE), error=function(e){message("can't access data")})
     d_backcheck <- tryCatch(onaDownload("BRCiS_spot_check_midline", "BRCiS",login,password, keepGroupNames=FALSE), error=function(e){message("can't access data")})
     if(length(d_midline)>1 & length(d_midline)>1){
+      d_midline <- d_midline[!is.na(d_midline$serial_no_ML),-711]
       midline <- as.data.frame(d_midline) %>%
         dplyr::rename(
           contact_number=a_1705,
