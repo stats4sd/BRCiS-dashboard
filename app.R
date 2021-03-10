@@ -94,10 +94,10 @@ prepareData <- function(midline, backcheck){
   for(i in 1:length(var_to_backcheck)){
     isItDifferent <- ifelse(data_check[,backcheck_var[i]]!=data_check[,midline_var[i]], 1, 0)
     if(var_to_backcheck[i] %in% c("HouseholdSize", "rCSI")){
-      isItDifferent <- (abs(data_check[,backcheck_var[i]]-data_check[,midline_var[i]])) > 2
+      isItDifferent <- (abs(as.numeric(data_check[,backcheck_var[i]])-data_check[,midline_var[i]])) > 2
     }else if(var_to_backcheck[i]=="time_to_water"){
-      max_time <- pmax(data_check[,backcheck_var[i]], data_check[,midline_var[i]]) 
-      isItDifferent <- ((abs(data_check[,backcheck_var[i]]-data_check[,midline_var[i]])) > (max_time*0.2)) | (max_time <3)
+      max_time <- pmax(as.numeric(data_check[,backcheck_var[i]]), data_check[,midline_var[i]]) 
+      isItDifferent <- ((abs(as.numeric(data_check[,backcheck_var[i]])-data_check[,midline_var[i]])) > (max_time*0.2)) | (max_time <3)
     }
     data_check$qualScore <- data_check$qualScore + ifelse(is.na(isItDifferent), 0.5, isItDifferent)
   }
@@ -114,6 +114,7 @@ get_data <- function(login, password){
     d_backcheck <- tryCatch(onaDownload("BRCiS_spot_check_midline", "BRCiS",login,password, keepGroupNames=FALSE), error=function(e){message("can't access data")})
     if(length(d_midline)>1 & length(d_midline)>1){
       d_midline <- d_midline[!is.na(d_midline$serial_no_ML),-711]
+      d_backcheck <- d_backcheck[!is.na(d_backcheck$serial_no_ML),]
       midline <- as.data.frame(d_midline) %>%
         dplyr::rename(
           contact_number=a_1705,
