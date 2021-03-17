@@ -18,8 +18,10 @@ library(DT)
 # read the table containing the targets + tweak it
 d_targets <- read.csv("BackCheck-VariableMatching.csv")
 d_targets <- d_targets %>% 
-  mutate(N = NA,Member_org_BL=Member_id_BL) %>%
-  mutate(Member_id_BL=NULL, Country="Somalia")
+  mutate(N = NA, valid=NA, valid_duplicates=NA,invalid_redone=NA, invalid_needs_redoing=NA, no_serialno=NA,
+         Member_org_BL=Member_id_BL) %>%
+  mutate(Member_id_BL=NULL, Country="Somalia") %>%
+  select(-(AreaHHAvail:NumHHAvail))
 colnames(d_targets)=paste0(colnames(d_targets), ".m")
 
 
@@ -46,7 +48,8 @@ midline_keep <- c("serial_no_ML", "Member_org_BL",
                   "Region_BL", "District_BL", "Community_BL", "TeamLeader", "username", 
                   "midline_who", 
                   "contact_number", "contact_number2","start_time", "CompletionDateTime","date",
-                  "interviewDuration",  "interviewDuringDay", "extrashort", "supershort", "veryshort", "short",  "reasonableDuration", "toolong", "nbDontknow", "nb0s")
+                  "interviewDuration",  "interviewDuringDay", "extrashort", "supershort", "veryshort", "short",  "reasonableDuration", "toolong", "nbDontknow", "nb0s",
+                  "invalid","valid", "invalid_redone", "invalid_needs_redoing", "no_serialno")
 midline_keep <- paste0(midline_keep,".m")
 
 
@@ -80,10 +83,24 @@ prepareData <- function(midline, backcheck){
   midline$nbDontknow <- apply(midline,1,function(x) sum(x%in%c(-8, -9), na.rm=T))
   midline$nb0s <- apply(midline,1,function(x) sum(x==0, na.rm=T))
   midline$TeamLeader <- as.character(midline$TeamLeader)
+
+  midline<- midline %>%
+    mutate(invalid= interviewDuration<25,
+           valid=interviewDuration>=25,
+           invalid_redone=interviewDuration<25 & serial_no_ML %in% serial_no_ML[interviewDuration>=25],
+           invalid_needs_redoing= interviewDuration<25 & !serial_no_ML %in% serial_no_ML[interviewDuration>=25],
+           no_serialno=is.na(serial_no_ML))
+  
+  print(nrow(midline))
+  print(sum(midline$interviewDuration<25, na.rm=T))
+  print(sum(midline$interviewDuration<25 & midline$serial_no_ML %in% midline$serial_no_ML[midline$interviewDuration>=25]))
+  print(sum(midline$interviewDuration<25 & !midline$serial_no_ML %in% midline$serial_no_ML[midline$interviewDuration>=25], na.rm=T))
+  
   
   #add .m/.s to differentiate midline and backcheck
   colnames(midline) <- paste0(colnames(midline),".m")
   colnames(backcheck) <- paste0(colnames(backcheck),".s")
+  
   
   #merge midline and backcheck
   data_check <- left_join(midline[,c(midline_keep,midline_var)], backcheck[,c(backcheck_keep,backcheck_var)], by=c("serial_no_ML.m"="serial_no_ML.s"), keep=TRUE)
@@ -104,6 +121,8 @@ prepareData <- function(midline, backcheck){
   
   data_check$percentMatch <- ifelse(is.na(data_check$serial_no_ML.s), NA, 100-data_check$qualScore/length(backcheck_var)*100)
   
+
+  
   return(data_check)
 }
 
@@ -114,6 +133,7 @@ get_data <- function(login, password){
     d_backcheck <- tryCatch(onaDownload("BRCiS_spot_check_midline", "BRCiS",login,password, keepGroupNames=FALSE), error=function(e){message("can't access data")})
     if(length(d_midline)>1 & length(d_midline)>1){
       d_midline <- d_midline[!is.na(d_midline$serial_no_ML),-711]
+      d_midline <- d_midline[!is.na(d_midline$CompletionDateTime),]
       d_backcheck <- d_backcheck[!is.na(d_backcheck$serial_no_ML),]
       midline <- as.data.frame(d_midline) %>%
         dplyr::rename(
@@ -214,13 +234,24 @@ server <- function(input, output, session) {
         
         # merges targets with actual data so that %target can later be calculated
         forTargets<- data$check %>%
-          dplyr::group_by(Member_org_BL.m, Region_BL.m, District_BL.m)%>%
-          dplyr::summarise(N.m=sum(!is.na(unique(serial_no_ML.m)), na.rm=T))
-        data$targets <- left_join(select(d_targets, -N.m), forTargets, by=c("Member_org_BL.m"="Member_org_BL.m","Region_BL.m"="Region_BL.m", "District_BL.m"="District_BL.m"))
-        
+          dplyr::group_by(Member_org_BL.m, Region_BL.m, District_BL.m, valid.m)%>%
+                    dplyr::summarise(N.m=n(),
+                                     valid.m=sum(valid.m) - sum(duplicated(serial_no_ML.m[interviewDuration.m>=25])),
+                                     valid_duplicates.m = sum(duplicated(serial_no_ML.m[interviewDuration.m>=25])),
+                                     invalid_redone.m = sum(invalid_redone.m),
+                                     invalid_needs_redoing.m = sum(invalid_needs_redoing.m),
+                                     no_serialno.m = sum(no_serialno.m))
+        print(sum(duplicated((data$check)$serial_no_ML.m[(data$check)$valid.m])))
+        print(sum(duplicated((forTargets)$serial_no_ML.m[(forTargets)$valid.m])))
+        print(sum(forTargets$valid_duplicates.m))
+        data$targets <- left_join(select(d_targets, -N.m, -valid.m, -valid_duplicates.m, -invalid_redone.m,-invalid_needs_redoing.m, -no_serialno.m), forTargets, by=c("Member_org_BL.m"="Member_org_BL.m","Region_BL.m"="Region_BL.m", "District_BL.m"="District_BL.m"))
+        print(sum(duplicated((data$targets)$serial_no_ML.m[(data$targets)$valid.m])))
+        data$targets <- data$targets %>%
+          replace_na(list(N.m=0, valid.m=0, valid_duplicates.m=0, invalid_redone.m=0, invalid_needs_redoing.m=0, no_serialno.m=0))
+        print(sum(duplicated((data$targets)$serial_no_ML.m[(data$targets)$valid.m])))
     })
     
-
+    
     # update list of usernames
     updatedChoices = reactive({
       filtered_data <- isolate(data$check) %>%
@@ -240,11 +271,18 @@ server <- function(input, output, session) {
     # Prepare the very top table (%target table)
     targetTable <- reactive({
       data$targets%>%
-        mutate(N.m=ifelse(is.na(N.m), 0, N.m)) %>%
+        ungroup()%>%
         group_by_at(dplyr::vars(input$target_by))%>%
-        dplyr::summarise(AreaHHAvail.m=sum(AreaHHAvail.m),ParticipantHHAvail.m=sum(ParticipantHHAvail.m),
-                         TargetNoHH.m=sum(TargetNoHH.m), NumHHAvail.m=sum(NumHHAvail.m),N.m=sum(N.m)) %>%
-        mutate(target_perc=N.m/TargetNoHH.m)
+        dplyr::summarise(TargetNoHH.m=sum(TargetNoHH.m), 
+                         N.m=sum(N.m), 
+                         valid.m=sum(valid.m),
+                         valid_duplicates.m=sum(valid_duplicates.m),
+                         invalid_redone.m=sum(invalid_redone.m), 
+                         invalid_needs_redoing.m=sum(invalid_needs_redoing.m))%>%#, 
+                         #no_serialno=sum(no_serialno.m),
+                         #AreaTargetHH.m=sum(AreaTargetHH.m), 	
+                         #PartTargetHH.m=sum(PartTargetHH.m)) %>%
+        mutate(target_perc=valid.m/TargetNoHH.m)
     })
 
     

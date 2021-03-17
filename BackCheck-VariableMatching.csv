@@ -1,42 +1,42 @@
-Member_id_BL,Region_BL,District_BL,AreaHHAvail,ParticipantHHAvail,NumHHAvail,TargetNoHH
-AAH,Bakool,Elbarde,55,55,110,100
-AAH,Bakool,Hudur,55,55,110,100
-AAH,Banadir,Kahda,56,55,111,100
-AAH,Bakool,Wajid,55,55,110,100
-CESVI,Lower Shabelle,Afgoye,55,55,110,100
-CESVI,Hiraan,Beledweyne,58,55,113,100
-CESVI,Mudug,Galkaayo,55,55,110,100
-CESVI,Mudug,Hobyo,55,55,110,100
-CWW,Lower Shabelle,Afgoye,54,55,109,100
-CWW,Gedo,Bardera,55,55,110,100
-CWW,Gedo,Belet-Hawa,54,56,110,100
-CWW,Banadir,Bondhere,55,55,110,100
-CWW,Awdal,Borama,65,55,120,100
-CWW,Banadir,Karaan,55,55,110,100
-CWW,Banadir,Wadajir,55,55,110,100
-CWW,Lower Shabelle,Wanlaweyn,55,55,110,100
-CWW,Banadir,Yaqshid,55,55,110,100
-GREDO,Bay,Dinsoor,55,55,110,100
-IRC,Galgaduud,Adaado,55,55,110,100
-IRC,Nugaal,Burtinle,55,61,116,100
-IRC,Galgaduud,Dhusamareb,60,55,115,100
-IRC,Mudug,Galdogob,55,55,110,100
-IRC,Mudug,Galkaayo,57,53,110,100
-IRC,Banadir,Karaan,55,55,110,100
-KAALO,Bari,Gardho,0,55,55,50
-KAALO,Bari,Iskushuban,0,55,55,50
-NRC,Galgaduud,Adaado,56,54,110,100
-NRC,Bay,Baidoa,55,55,110,100
-NRC,Lower Juba,Dhobley,55,55,110,100
-NRC,Galgaduud,Dhusamareb,55,55,110,100
-NRC,Sanaag,Erigavo,0,70,70,50
-NRC,Banadir,Hamarwen,0,51,51,50
-NRC,Lower Juba,Kismayo,0,55,55,50
-NRC,Sool,Lascanod,0,95,95,50
-NRC,Gedo,Luuq,0,55,55,50
-SCI,Bay,Baidoa,55,55,110,100
-SCI,Hiraan,Beledweyne,55,55,110,100
-SCI,Banadir,Daynile,55,55,110,100
-SCI,Banadir,Hodan,0,55,55,50
-SCI,Banadir,Holwadag,0,55,55,50
-SCI,Hiraan,Mataban,54,55,109,100
+Member_id_BL,Region_BL,District_BL,AreaHHAvail,ParticipantHHAvail,NumHHAvail,AreaTargetHH,PartTargetHH,TargetNoHH
+AAH,Bakool,Elbarde,55,55,110,50,50,100
+AAH,Bakool,Hudur,55,55,110,50,50,100
+AAH,Banadir,Kahda,56,55,111,50,50,100
+AAH,Bakool,Wajid,55,55,110,50,50,100
+CESVI,Lower Shabelle,Afgoye,55,55,110,50,50,100
+CESVI,Hiraan,Beledweyne,58,55,113,50,50,100
+CESVI,Mudug,Galkaayo,55,55,110,50,50,100
+CESVI,Mudug,Hobyo,55,55,110,50,50,100
+CWW,Lower Shabelle,Afgoye,54,55,109,50,50,100
+CWW,Gedo,Bardera,55,55,110,50,50,100
+CWW,Gedo,Belet-Hawa,54,56,110,50,50,100
+CWW,Banadir,Bondhere,55,55,110,50,50,100
+CWW,Awdal,Borama,65,55,120,50,50,100
+CWW,Banadir,Karaan,55,55,110,50,50,100
+CWW,Banadir,Wadajir,55,55,110,50,50,100
+CWW,Lower Shabelle,Wanlaweyn,55,55,110,50,50,100
+CWW,Banadir,Yaqshid,55,55,110,50,50,100
+GREDO,Bay,Dinsoor,55,55,110,50,50,100
+IRC,Galgaduud,Adaado,55,55,110,50,50,100
+IRC,Nugaal,Burtinle,55,61,116,50,50,100
+IRC,Galgaduud,Dhusamareb,60,55,115,50,50,100
+IRC,Mudug,Galdogob,55,55,110,50,50,100
+IRC,Mudug,Galkaayo,57,53,110,50,50,100
+IRC,Banadir,Karaan,55,55,110,50,50,100
+KAALO,Bari,Gardho,0,55,55,0,50,50
+KAALO,Bari,Iskushuban,0,55,55,0,50,50
+NRC,Galgaduud,Adaado,56,54,110,50,50,100
+NRC,Bay,Baidoa,55,55,110,50,50,100
+NRC,Lower Juba,Dhobley,55,55,110,50,50,100
+NRC,Galgaduud,Dhusamareb,55,55,110,50,50,100
+NRC,Sanaag,Erigavo,0,70,70,0,50,50
+NRC,Banadir,Hamarwen,0,51,51,0,50,50
+NRC,Lower Juba,Kismayo,0,55,55,0,50,50
+NRC,Sool,Lascanod,0,95,95,0,50,50
+NRC,Gedo,Luuq,0,55,55,0,50,50
+SCI,Bay,Baidoa,55,55,110,50,50,100
+SCI,Hiraan,Beledweyne,55,55,110,50,50,100
+SCI,Banadir,Daynile,55,55,110,50,50,100
+SCI,Banadir,Hodan,0,55,55,0,50,50
+SCI,Banadir,Holwadag,0,55,55,0,50,50
+SCI,Hiraan,Mataban,54,55,109,50,50,100
