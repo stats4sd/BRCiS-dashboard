@@ -85,16 +85,11 @@ prepareData <- function(midline, backcheck){
   midline$TeamLeader <- as.character(midline$TeamLeader)
 
   midline<- midline %>%
-    mutate(invalid= interviewDuration<25,
-           valid=interviewDuration>=25,
-           invalid_redone=interviewDuration<25 & serial_no_ML %in% serial_no_ML[interviewDuration>=25],
-           invalid_needs_redoing= interviewDuration<25 & !serial_no_ML %in% serial_no_ML[interviewDuration>=25],
+    mutate(invalid= interviewDuration<20,
+           valid=interviewDuration>=20,
+           invalid_redone=interviewDuration<20 & serial_no_ML %in% serial_no_ML[interviewDuration>=20],
+           invalid_needs_redoing= interviewDuration<20 & !serial_no_ML %in% serial_no_ML[interviewDuration>=20],
            no_serialno=is.na(serial_no_ML))
-  
-  print(nrow(midline))
-  print(sum(midline$interviewDuration<25, na.rm=T))
-  print(sum(midline$interviewDuration<25 & midline$serial_no_ML %in% midline$serial_no_ML[midline$interviewDuration>=25]))
-  print(sum(midline$interviewDuration<25 & !midline$serial_no_ML %in% midline$serial_no_ML[midline$interviewDuration>=25], na.rm=T))
   
   
   #add .m/.s to differentiate midline and backcheck
@@ -236,19 +231,14 @@ server <- function(input, output, session) {
         forTargets<- data$check %>%
           dplyr::group_by(Member_org_BL.m, Region_BL.m, District_BL.m, valid.m)%>%
                     dplyr::summarise(N.m=n(),
-                                     valid.m=sum(valid.m) - sum(duplicated(serial_no_ML.m[interviewDuration.m>=25])),
-                                     valid_duplicates.m = sum(duplicated(serial_no_ML.m[interviewDuration.m>=25])),
+                                     valid.m=sum(valid.m) - sum(duplicated(serial_no_ML.m[interviewDuration.m>=20])),
+                                     valid_duplicates.m = sum(duplicated(serial_no_ML.m[interviewDuration.m>=20])),
                                      invalid_redone.m = sum(invalid_redone.m),
                                      invalid_needs_redoing.m = sum(invalid_needs_redoing.m),
                                      no_serialno.m = sum(no_serialno.m))
-        print(sum(duplicated((data$check)$serial_no_ML.m[(data$check)$valid.m])))
-        print(sum(duplicated((forTargets)$serial_no_ML.m[(forTargets)$valid.m])))
-        print(sum(forTargets$valid_duplicates.m))
         data$targets <- left_join(select(d_targets, -N.m, -valid.m, -valid_duplicates.m, -invalid_redone.m,-invalid_needs_redoing.m, -no_serialno.m), forTargets, by=c("Member_org_BL.m"="Member_org_BL.m","Region_BL.m"="Region_BL.m", "District_BL.m"="District_BL.m"))
-        print(sum(duplicated((data$targets)$serial_no_ML.m[(data$targets)$valid.m])))
         data$targets <- data$targets %>%
           replace_na(list(N.m=0, valid.m=0, valid_duplicates.m=0, invalid_redone.m=0, invalid_needs_redoing.m=0, no_serialno.m=0))
-        print(sum(duplicated((data$targets)$serial_no_ML.m[(data$targets)$valid.m])))
     })
     
     
