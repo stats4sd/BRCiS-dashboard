@@ -106,10 +106,10 @@ prepareData <- function(midline, backcheck){
   for(i in 1:length(var_to_backcheck)){
     isItDifferent <- ifelse(data_check[,backcheck_var[i]]!=data_check[,midline_var[i]], 1, 0)
     if(var_to_backcheck[i] %in% c("HouseholdSize", "rCSI")){
-      isItDifferent <- (abs(as.numeric(data_check[,backcheck_var[i]])-data_check[,midline_var[i]])) > 2
+      isItDifferent <- (abs(as.numeric(data_check[,backcheck_var[i]])-as.numeric(data_check[,midline_var[i]]))) > 2
     }else if(var_to_backcheck[i]=="time_to_water"){
-      max_time <- pmax(as.numeric(data_check[,backcheck_var[i]]), data_check[,midline_var[i]]) 
-      isItDifferent <- ((abs(as.numeric(data_check[,backcheck_var[i]])-data_check[,midline_var[i]])) > (max_time*0.2)) | (max_time <3)
+      max_time <- pmax(as.numeric(data_check[,backcheck_var[i]]), as.numeric(data_check[,midline_var[i]])) 
+      isItDifferent <- ((abs(as.numeric(data_check[,backcheck_var[i]])-as.numeric(data_check[,midline_var[i]]))) > (max_time*0.2)) | (max_time <3)
     }
     data_check$qualScore <- data_check$qualScore + ifelse(is.na(isItDifferent), 0.5, isItDifferent)
   }
