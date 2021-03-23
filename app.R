@@ -235,7 +235,14 @@ server <- function(input, output, session) {
                                      valid_duplicates.m = sum(duplicated(serial_no_ML.m[interviewDuration.m>=20])),
                                      invalid_redone.m = sum(invalid_redone.m),
                                      invalid_needs_redoing.m = sum(invalid_needs_redoing.m),
-                                     no_serialno.m = sum(no_serialno.m))
+                                     no_serialno.m = sum(no_serialno.m))%>%
+          dplyr::group_by(Member_org_BL.m, Region_BL.m, District_BL.m)%>%
+          dplyr::summarise(N.m=sum(N.m),
+                           valid.m=sum(valid.m),
+                           valid_duplicates.m = sum(valid_duplicates.m),
+                           invalid_redone.m = sum(invalid_redone.m),
+                           invalid_needs_redoing.m = sum(invalid_needs_redoing.m),
+                           no_serialno.m = sum(no_serialno.m))
         data$targets <- left_join(select(d_targets, -N.m, -valid.m, -valid_duplicates.m, -invalid_redone.m,-invalid_needs_redoing.m, -no_serialno.m), forTargets, by=c("Member_org_BL.m"="Member_org_BL.m","Region_BL.m"="Region_BL.m", "District_BL.m"="District_BL.m"))
         data$targets <- data$targets %>%
           replace_na(list(N.m=0, valid.m=0, valid_duplicates.m=0, invalid_redone.m=0, invalid_needs_redoing.m=0, no_serialno.m=0))
