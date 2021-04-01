@@ -29,9 +29,7 @@ colnames(d_targets)=paste0(colnames(d_targets), ".m")
 var_to_backcheck <- c("HouseholdSize",
                       "livelihood_zone",
                       "shock_main",
-                      "head_age",
-                      "head_marital_status",
-                      "worked_with_community",
+                      "rCSI",
                       "house_ownership",
                       "own_land",
                       "has_livestock",
@@ -107,7 +105,7 @@ prepareData <- function(midline, backcheck){
   
   for(i in 1:length(var_to_backcheck)){
     isItDifferent <- ifelse(data_check[,backcheck_var[i]]!=data_check[,midline_var[i]], 1, 0)
-    if(var_to_backcheck[i] %in% c("HouseholdSize")){
+    if(var_to_backcheck[i] %in% c("HouseholdSize", "rCSI")){
       isItDifferent <- (abs(as.numeric(data_check[,backcheck_var[i]])-as.numeric(data_check[,midline_var[i]]))) > 2
     }else if(var_to_backcheck[i]=="time_to_water"){
       max_time <- pmax(as.numeric(data_check[,backcheck_var[i]]), as.numeric(data_check[,midline_var[i]])) 
@@ -143,10 +141,7 @@ get_data <- function(login, password){
           own_land=k2.a_616,
           has_livestock=l.a_618,
           time_to_water=m.m1.a_704_a,
-          head_occupation=v.a_1604,
-          head_age=HoH_meta.update.b_106,
-          head_marital_status=HoH_meta.update.b_107,
-          worked_with_community=q.q5.b_1106
+          head_occupation=v.a_1604
         )
       backcheck <- as.data.frame(d_backcheck) %>%
         dplyr::rename(
@@ -156,10 +151,7 @@ get_data <- function(login, password){
           own_land=Spot_Check.a_616,
           has_livestock=Spot_Check.a_618,
           time_to_water=Spot_Check.a_704_a,
-          head_occupation=Spot_Check.a_1604,
-          head_age=Spot_Check.b_106,
-          head_marital_status=Spot_Check.b_107,
-          worked_with_community=Spot_Check.b_1106
+          head_occupation=Spot_Check.a_1604
         )
       return(prepareData(midline, backcheck))
     }

@@ -1,0 +1,45 @@
+d_midline<-onaDownload("BRCiS_Midline_Survey_2021", "BRCiS","andrewpinney","CharlieMeranti8991", keepGroupNames=FALSE)
+d_midline <-d_midline[!is.na()]
+d_backcheck<-onaDownload("BRCiS_spot_check_midline", "BRCiS","andrewpinney","CharlieMeranti8991", keepGroupNames=FALSE)
+
+
+d_recontact <-onaDownload("BRCiS_Midline_ReContact_XLSFORM", "BRCiS","andrewpinney","CharlieMeranti8991", keepGroupNames=FALSE)
+
+
+d_midline <- d_midline[!is.na(d_midline$serial_no_ML),]
+
+sum(!d_midline$serial_no_ML %in% d_recontact$serial_no_ML)
+sum(!d_recontact$serial_no_ML %in% d_midline$serial_no_ML)
+
+d_community <-onaDownload("BRCiS_2021_Midline_Community_Questionnaire", "BRCiS","andrewpinney","CharlieMeranti8991", keepGroupNames=FALSE)
+
+
+column(4, wellPanel(
+  dateRangeInput('dateRange',
+                 label = 'Filter crimes by date',
+                 start = as.Date('2018-01-01') , end = as.Date('2018-06-01')
+  )
+)),
+
+
+
+
+
+
+
+
+
+
+
+
+forTargets<- data_check %>%
+  dplyr::group_by(Member_org_BL.m, Region_BL.m, District_BL.m, valid.m)%>%
+  dplyr::summarise(N.m=n(),
+                   valid.m=sum(valid.m) - sum(duplicated(serial_no_ML.m[interviewDuration.m>=20])),
+                   valid_duplicates.m = sum(duplicated(serial_no_ML.m[interviewDuration.m>=20])),
+                   invalid_redone.m = sum(invalid_redone.m),
+                   invalid_needs_redoing.m = sum(invalid_needs_redoing.m),
+                   no_serialno.m = sum(no_serialno.m))
+data_targets <- left_join(select(d_targets, -N.m, -valid.m, -valid_duplicates.m, -invalid_redone.m,-invalid_needs_redoing.m, -no_serialno.m), forTargets, by=c("Member_org_BL.m"="Member_org_BL.m","Region_BL.m"="Region_BL.m", "District_BL.m"="District_BL.m"))
+data_targets <- data_targets %>%
+  replace_na(list(N.m=0, valid.m=0, valid_duplicates.m=0, invalid_redone.m=0, invalid_needs_redoing.m=0, no_serialno.m=0))
