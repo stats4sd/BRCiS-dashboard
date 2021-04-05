@@ -24,6 +24,9 @@ d_targets <- d_targets %>%
   select(-(AreaHHAvail:NumHHAvail))
 colnames(d_targets)=paste0(colnames(d_targets), ".m")
 
+#d_list_communities <- read.csv("brcis-communities_20200608.csv")
+#d_list_communities2 <- read.csv("BRCiS2 Community List - 2 Febr 2020.csv")
+var_community <- c("date","a.Member_org", "b.Region", "b.District", "b.Community", "b.program_intensity")
 
 # list of the variables use to check midline/backcheck match
 var_to_backcheck <- c("HouseholdSize",
@@ -85,6 +88,7 @@ prepareData <- function(midline, backcheck){
   midline$nbDontknow <- apply(midline,1,function(x) sum(x%in%c(-8, -9), na.rm=T))
   midline$nb0s <- apply(midline,1,function(x) sum(x==0, na.rm=T))
   midline$TeamLeader <- as.character(midline$TeamLeader)
+  
 
   midline<- midline %>%
     mutate(invalid= interviewDuration<20,
@@ -128,10 +132,13 @@ prepareData <- function(midline, backcheck){
 get_data <- function(login, password){
     d_midline <- tryCatch(onaDownload("BRCiS_Midline_Survey_2021", "BRCiS",login,password, keepGroupNames=FALSE), error=function(e){message("can't access data")})
     d_backcheck <- tryCatch(onaDownload("BRCiS_spot_check_midline", "BRCiS",login,password, keepGroupNames=FALSE), error=function(e){message("can't access data")})
-    if(length(d_midline)>1 & length(d_midline)>1){
+    d_community <-tryCatch(onaDownload("BRCiS_2021_Midline_Community_Questionnaire", "BRCiS",login,password, keepGroupNames=FALSE), error=function(e){message("can't access data")})
+    
+    if(length(d_midline)>1 & length(d_midline)>1 & length(d_community)>1){
       d_midline <- d_midline[!is.na(d_midline$serial_no_ML),-711]
       d_midline <- d_midline[!is.na(d_midline$CompletionDateTime),]
       d_backcheck <- d_backcheck[!is.na(d_backcheck$serial_no_ML),]
+      
       midline <- as.data.frame(d_midline) %>%
         dplyr::rename(
           contact_number=a_1705,
@@ -161,10 +168,18 @@ get_data <- function(login, password){
           head_marital_status=Spot_Check.b_107,
           worked_with_community=Spot_Check.b_1106
         )
+      
       return(prepareData(midline, backcheck))
     }
 }
 
+get_data_community <- function(login, password){
+  d_community <-tryCatch(onaDownload("BRCiS_2021_Midline_Community_Questionnaire", "BRCiS",login,password, keepGroupNames=FALSE), error=function(e){message("can't access data")})
+  d_community <- d_community[!is.na(d_community$b.Community),]
+  community <- as.data.frame(d_community)
+  community$date <- as.character(as.Date(community$X_submission_time, tz = "GMT"))
+  return(community)
+}
 
 # Define the app look, buttons, select inputs
 ui <- fluidPage(
@@ -200,7 +215,9 @@ ui <- fluidPage(
         br(),br(),
         dataTableOutput("summary_table"),
         br(),br(),
-        dataTableOutput("data")
+        dataTableOutput("data"),
+        br(),br(),
+        dataTableOutput("community_table")
       )
     )
 )
@@ -212,6 +229,7 @@ server <- function(input, output, session) {
     #initiate table for when data has not been loaded yet
     data$check <- data.frame(matrix(ncol=length(allvars), nrow = 0, dimnames=list(NULL, allvars)) )
     data$targets <- d_targets %>% slice(0)
+    data$community <- data.frame(matrix(ncol=length(var_community), nrow=0, dimnames = list(NULL, var_community)))
     
     #ask for ona username and password
     observeEvent(input$load_data, {
@@ -228,6 +246,7 @@ server <- function(input, output, session) {
     # updates picker input choices
     observeEvent(input$submit, {
         data$check <- get_data(isolate(input$login), isolate(input$password))
+        data$community <- get_data_community(isolate(input$login), isolate(input$password))
         removeModal()
         updatePickerInput(session, "filter_partner", choices = sort(unique((data$check)$Member_org_BL.m), na.last=TRUE),selected = unique((data$check)$Member_org_BL.m))
         updatePickerInput(session, "filter_date", choices = sort(unique((data$check)$date.m), na.last=TRUE),selected = unique((data$check)$date.m))
@@ -328,6 +347,21 @@ server <- function(input, output, session) {
                District_BL.m%in% input$filter_district)%>%
         filter(percentMatch<=input$data_quality_threshold | input$data_quality_threshold==100)%>%
         .[,varshown]
+    })
+    
+    # Prepare community table
+    communityTable <- reactive({
+      data$community %>%
+        filter(a.Member_org%in%input$filter_partner,
+               date %in% input$filter_date,
+               b.District%in% input$filter_district)%>%
+        select(date, a.Member_org, b.Region, b.District, b.Community, b.program_intensity)
+    })
+    
+    
+    # show community table
+    output$community_table <- renderDataTable({
+      datatable(communityTable())
     })
     
     # show the top table
