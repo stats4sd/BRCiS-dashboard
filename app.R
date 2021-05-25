@@ -144,6 +144,7 @@ get_data <- function(login, password){
           contact_number=a_1705,
           contact_number2=a_1708,
           #livelihood_zone=e0.cluster.e5.b_110,
+          #HouseholdSize=e0.cluster.e5.HouseholdSize,
           livelihood_zone=f.f1.b_110,
           shock_main=f.f1.main_shock,
           house_ownership=j4.a_516,
@@ -175,7 +176,7 @@ get_data <- function(login, password){
 
 get_data_community <- function(login, password){
   d_community <-tryCatch(onaDownload("BRCiS_2021_Midline_Community_Questionnaire", "BRCiS",login,password, keepGroupNames=FALSE), error=function(e){message("can't access data")})
-  d_community <- d_community[!is.na(d_community$b.Community),]
+  d_community <- d_community[!is.na(d_community$start_time),]
   community <- as.data.frame(d_community)
   community$date <- as.character(as.Date(community$X_submission_time, tz = "GMT"))
   return(community)
@@ -253,7 +254,6 @@ server <- function(input, output, session) {
         updatePickerInput(session, "filter_district", choices = sort(unique((data$check)$District_BL.m), na.last=TRUE),selected = unique((data$check)$District_BL.m))
         updatePickerInput(session, "filter_teamLeader", choices = sort(unique((data$check)$TeamLeader.m), na.last=TRUE),selected = unique((data$check)$TeamLeader.m))
         #updatePickerInput(session, "filter_teamLeader", choices = sort(unique((data$check)$TeamLeader.m), na.last=TRUE),selected = unique((data$check)$TeamLeader.m))
-        
         # merges targets with actual data so that %target can later be calculated
         forTargets<- data$check %>%
           dplyr::group_by(Member_org_BL.m, Region_BL.m, District_BL.m, valid.m)%>%
